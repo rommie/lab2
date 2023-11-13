@@ -114,6 +114,13 @@ subject_grade_model = api.model('SubjectGrade', {
     'grade': fields.Integer(required=True, description='Оценка')
 })
 
+create_student_model = api.model('CreateStudent', {
+    'name': fields.String(required=True, description='Имя студента'),
+    'age': fields.Integer(required=True, description='Возраст студента'),
+    'group': fields.String(required=True, description='Группа студента'),
+    'year_of_study': fields.Integer(required=True, description='Год обучения студента')
+})
+
 student_model = api.model('Student', {
     'uid': fields.Integer(readonly=True, description='Идентификатор студента'),
     'name': fields.String(required=True, description='Имя студента'),
@@ -165,7 +172,7 @@ class StudentsResource(Resource):
         return {'count': len(student_list), 'items': student_list}
 
     @students_ns.doc('Добавление нового студента')
-    @students_ns.expect(student_model)
+    @students_ns.expect(create_student_model)
     @students_ns.marshal_with(student_model)
     def post(self):
         """
@@ -178,12 +185,7 @@ class StudentsResource(Resource):
             group=new_student_data['group'],
             year_of_study=new_student_data['year_of_study']
         )
-
-        if 'subjects_grades' in new_student_data:
-            for subject_grade_data in new_student_data['subjects_grades']:
-                new_student.add_subject_grade(subject_grade_data['subject'], subject_grade_data['grade'])
-
-        students_data.append(new_student)
+        
         return new_student.to_dict()
 
 @students_ns.route('/students/<int:id>')
